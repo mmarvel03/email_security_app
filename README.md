@@ -23,9 +23,11 @@ A Flask-based web application that analyzes email content and URLs to classify m
 - HTML / CSS
 - Pickle
 
-## Installation
+## Installation and Usage
+
+To test this application locally, follow these steps:
 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/USERNAME/REPOSITORY-NAME.git
+git clone https://github.com/mmarvel03/email_security_app.git
