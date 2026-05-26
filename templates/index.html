@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificator de Securitate Email</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Verificator de Securitate Email</h1>
+
+        <div class="stats-grid">
+            <div class="stat-card stat-total">
+                <h3>Total analize</h3>
+                <p>{{ stats.total }}</p>
+            </div>
+            <div class="stat-card stat-safe">
+                <h3>SIGUR</h3>
+                <p>{{ stats.safe }}</p>
+            </div>
+            <div class="stat-card stat-spam">
+                <h3>SPAM</h3>
+                <p>{{ stats.spam }}</p>
+            </div>
+            <div class="stat-card stat-phishing">
+                <h3>PHISHING</h3>
+                <p>{{ stats.phishing }}</p>
+            </div>
+        </div>
+
+        {% set total = stats.total if stats.total > 0 else 1 %}
+        <div class="chart-box">
+            <h2>Privire generală asupra amenințărilor</h2>
+
+            <div class="bar-group">
+                <span>SIGUR</span>
+                <div class="bar-wrapper">
+                    <div class="bar bar-safe" style="width: {{ (stats.safe / total) * 100 }}%;"></div>
+                </div>
+                <span>{{ stats.safe }}</span>
+            </div>
+
+            <div class="bar-group">
+                <span>SPAM</span>
+                <div class="bar-wrapper">
+                    <div class="bar bar-spam" style="width: {{ (stats.spam / total) * 100 }}%;"></div>
+                </div>
+                <span>{{ stats.spam }}</span>
+            </div>
+
+            <div class="bar-group">
+                <span>PHISHING</span>
+                <div class="bar-wrapper">
+                    <div class="bar bar-phishing" style="width: {{ (stats.phishing / total) * 100 }}%;"></div>
+                </div>
+                <span>{{ stats.phishing }}</span>
+            </div>
+        </div>
+
+        <form method="POST" action="/">
+            <label for="sender">Email expeditor</label>
+            <input type="text" name="sender" id="sender" placeholder="ex: security@bank-alert.com" value="{{ sender }}">
+
+            <label for="subject">Subiect</label>
+            <input type="text" name="subject" id="subject" placeholder="ex: Verificare urgentă a contului" value="{{ subject }}">
+
+            <label for="message">Previzualizare mesaj</label>
+            <textarea name="message" id="message" rows="6" placeholder="Introdu conținutul mesajului...">{{ message }}</textarea>
+
+            <label for="url">URL (opțional)</label>
+            <input type="text" name="url" id="url" placeholder="ex: http://secure-login-bank-alert.com" value="{{ url }}">
+
+            <button type="submit">Analizează emailul</button>
+        </form>
+
+        <form method="GET" action="/fetch-email" style="margin-top: 15px;">
+            <button type="submit">Preia ultimul email necitit</button>
+        </form>
+
+        <form method="POST" action="/clear-history" style="margin-top: 15px;">
+            <button type="submit" class="clear-btn">Șterge istoricul</button>
+        </form>
+
+        {% if result %}
+            <div class="result-box
+                {% if result == 'SAFE' %}safe{% endif %}
+                {% if result == 'SPAM' %}spam{% endif %}
+                {% if result == 'PHISHING' %}phishing{% endif %}">
+
+                <h2>
+                    Rezultat:
+                    {% if result == 'SAFE' %}
+                        Sigur
+                    {% elif result == 'SPAM' %}
+                        Spam
+                    {% elif result == 'PHISHING' %}
+                        Phishing
+                    {% else %}
+                        {{ result }}
+                    {% endif %}
+                </h2>
+
+                <div class="score">Scor de risc: {{ score }}%</div>
+
+                {% if reasons %}
+                    <h3>Motive:</h3>
+                    <ul>
+                        {% for reason in reasons %}
+                            <li>{{ reason }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if history %}
+            <h2 class="history-title">Istoric analize</h2>
+
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Expeditor</th>
+                        <th>Subiect</th>
+                        <th>Rezultat</th>
+                        <th>Scor</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in history %}
+                        <tr class="
+    {% if item.result == 'SAFE' %}row-safe{% endif %}
+    {% if item.result == 'SPAM' %}row-spam{% endif %}
+    {% if item.result == 'PHISHING' %}row-phishing{% endif %}
+">
+    <td><a href="/select-history/{{ item.id }}">{{ item.sender }}</a></td>
+    <td><a href="/select-history/{{ item.id }}">{{ item.subject }}</a></td>
+    <td><a href="/select-history/{{ item.id }}">{{ item.result }}</a></td>
+    <td><a href="/select-history/{{ item.id }}">{{ item.score }}%</a></td>
+    <td><a href="/select-history/{{ item.id }}">{{ item.created_at }}</a></td>
+</tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+</body>
+</html>
